@@ -1,102 +1,89 @@
 // package imports
-var fs = require('fs');              //allows operations on files (file stream)
-var xml2js = require('xml2js');        //xml parsing
-var cheerio = require('cheerio');
-var sanitizeHtml = require('sanitize-html');
-
-// const path = require('path');       //allows paths for moving files
-// const xml = require("xml-parse");   //xml parser module
-
+var fs = require('fs');                 //allows operations on files (file stream)
+var xml2js = require('xml2js');         //xml parsing used to convert xml to JSON
+var convert = require('xml-js');        //parsing used to convert JSON back to xml
+const shell = require('electron').shell;
+const path = require('path');
 
 
 // variables related to file name. Edit thise before running this script.
-// xml file should be named '[sitename]-basic-page.xml'
+// xml file should be named '[sitename]-basic-page.xml' ans should be saved to the 'xml-import' folder.
 // change the website variable to [sitename]
 var website = 'education';
-var fileNameLoc = '1-xml-import/' + website +'-basic-page.xml';
-var modFileNameLoc = '2-modified-xml-import/' + website + '-basic-page-modified.xml';
+var fileNameLoc = 'xml-import/' + website +'-basic-page.xml';
+var modFileNameLoc = 'xml-import/' + website +'-basic-page-modified.xml';
 
 
-var bodyHtmlObject;         //html object
-var bodyHtmlString;         //html string
-var bodyHtmlSubString;      //subset of text from within the html string
-
-
-
-
+var bodyHtmlObject;                    //xml containing html is converted into JSON and stored in this variable.
+var bodyHtmlString;                    //object is converted into a string.  This variable is manipulated throughout this file by functions to scrub the html
+var bodyHtmlObjectModified;            //subset of text from within the html string
+var bodyHtmlObjectToXml;
 
 
 // copy the file from the import folder (1) and paste it to the new location (2) using a new filename
-fs.createReadStream(fileNameLoc)
-    .pipe(fs.createWriteStream(modFileNameLoc));
+fs.createReadStream(fileNameLoc);
+    //.pipe(fs.createWriteStream(modFileNameLoc));
 
 
 
 // read the newly created file and store it in the 'data' variable as an object
-fs.readFile(modFileNameLoc, (err, data) => {
+fs.readFile(fileNameLoc, (err, data) => {
     if (err) throw err;
     //console.log(data.toString());
 
-    
     
     // create a new parser 
     var parser = new xml2js.Parser(); 
    
     
-    
     // pares file into object notation
-    parser.parseString(data, function (err, result) {
+     parser.parseString(data, function (err, result) {
         
-        //console.dir(JSON.stringify(result));
         console.log("\nThere are " + result.nodes.node.length + " pages being parsed.\n");
-        bodyHtmlObject = result.nodes.node[1].Body[0];
-        console.log(bodyHtmlObject);
-        bodyHtmlString = bodyHtmlObject.toString();    
+        bodyHtmlObject = result;
+        bodyHtmlString = JSON.stringify(result);  
     });
+   
+    // perform operations on html string
+    removeSpans();
+    
+    // convert from string back to json back to xml
+    bodyHtmlObjectModified = JSON.parse(bodyHtmlString);
+    bodyHtmlObjectToXml = convert.json2xml(bodyHtmlObjectModified, {compact: true, spaces: 4});
+    
+    
+    // for testing purposes print the contents of the altered html string
+    //console.log("\n\n\n********** New XML file: **********\n");
+    //console.log(bodyHtmlObjectToXml);
+    
+    //create a new xml file which contains our modified html.
+    fs.writeFile(modFileNameLoc, bodyHtmlObjectToXml, function(err) {
+        if(err) {
+            return console.log(err);
+        }
 
-    
-// You can loop through object properties by using the for-in loop:
+        console.log("The file was modified and saved successfully!");
 
-// Example
-// myObj = { "name":"John", "age":30, "car":null };
-// for (i in myObj) {
-//    console.log(result.nodes.node[i].Body);
-// }
-    
-    
-    //variable used to load html into cherio
-    
-    correctLinkTargets();
-    console.log('\nScript complete.\n');
+        //shell.openItem(path.join(__dirname, modFileNameLoc));
+    }); 
+
 });
 
 
 
 // functions for parsing and updating html content
 function removeSpans() {
-    const $ = cheerio.load(bodyHtmlObject);
-    //$('span').contents().unwrap();
-    //$('h2').addClass('welcome');
-    console.log("\n *************** \n");
-    console.log($.html());
-    console.log('In the removeSpans() function.');
-
-//=> <h2 class="title welcome">Hello there!</h2>
-//$div.find(".find-me").remove();
-//console.log($div);    
     
+    //regex for span opening and closing tag
+    var spanOpeningTagRegex = /<span[A-Za-z0-9\s=\\"-._:;%]*>/g;
+    var spanClosingTagRegex = /<\/span>/g 
+    
+    //replace span tags with nothing -- essentially deletes them
+    bodyHtmlString = bodyHtmlString.replace(spanOpeningTagRegex, '');
+    bodyHtmlString = bodyHtmlString.replace(spanClosingTagRegex, '');
+    
+   
+    console.log('The function removeSpans() is complete');
 }
 
-function correctLinkTargets() {
-    const $ = cheerio.load(bodyHtmlObject);
-    //$('a').contents().unwrap();
-    //$('h2').addClass('welcome');
-    console.log("\n *************** \n");
-    console.log($.html());
-    console.log('In the correctLinkTargets() function.');
 
-//=> <h2 class="title welcome">Hello there!</h2>
-//$div.find(".find-me").remove();
-//console.log($div);    
-    
-}
