@@ -68,6 +68,7 @@ fs.readFile(fileNameLoc, (err, data) => {
     removeTargetAtt();
     setCorrectTargetAtt();
     removeSpans();
+    removeStrongsFromHeaderTags();
 
     
     
@@ -103,7 +104,7 @@ fs.readFile(fileNameLoc, (err, data) => {
 function removeStyleAtt() {
     
     //regex for span opening and closing tag
-    var styleAttRegEx = /style=\\"[\w:\s()\.,;\-!%']*\\"\s*/g;
+    var styleAttRegEx = /style=\\"[\w:\s()\.,;\-!%'\\"]*\\"\s*/g;
     
     //replace span tags with nothing -- essentially deletes them
     bodyHtmlString = bodyHtmlString.replace(styleAttRegEx, '');
@@ -184,4 +185,16 @@ function removeSpans() {
 }
 
 
+function removeStrongsFromHeaderTags() {
+    var findStrongTagsinHeaderTagsRegex = /(<\s*h[1-6]\s*>)([^<]*?)(<strong>)+(.*?)(<\/strong>)+(.*?)(<\/\s*h[1-6]\s*>)/g;
+    console.log(findStrongTagsinHeaderTagsRegex);
+    var matches = bodyHtmlString.match(findStrongTagsinHeaderTagsRegex);
+    console.log(matches);
+    
+    bodyHtmlString = bodyHtmlString.replace(findStrongTagsinHeaderTagsRegex, '$1$2$4$6$7');
+   
+    
+    console.log('Strong tags within header tags have been removed.');
+    
+}
 
