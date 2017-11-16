@@ -119,7 +119,7 @@ function makeLinksRelative() {
     var hrefInternalRegex = new RegExp("href=\\\\\"https?:\/\/(www\\.)?" + website + ".uncc.edu(\/)(?!\\s)","g");
     
     //replace with "/" to create relative link
-    bodyHtmlString = bodyHtmlString.replace(hrefInternalRegex, '$2');
+    bodyHtmlString = bodyHtmlString.replace(hrefInternalRegex, 'href=\\\"$2');
    
     console.log('Links are now relative.');
 }
