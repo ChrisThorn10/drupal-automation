@@ -71,6 +71,7 @@ fs.readFile(fileNameLoc, (err, data) => {
     removeSpans();
     removeStrongsFromHeaderTags();
     formatTableTags();
+    removeDivs();
 
     
     
@@ -208,5 +209,17 @@ function formatTableTags() {
     bodyHtmlString = bodyHtmlString.replace(findTableTagRegEx, '<table border=\\"0\\" class=\\"table table-bordered table-responsive table-striped\\" style=\\"width:100%\\">');
     
     console.log('Tables are responsive and have additional boostrap styles');
+}
+
+
+function removeDivs() {
+    
+    //regex for span opening and closing tag
+    var divTagRegex = /<\/?div(.*)?>/g;
+    
+    //replace span tags with nothing -- essentially deletes them
+    bodyHtmlString = bodyHtmlString.replace(divTagRegex , '');
+   
+    console.log('All div tags have been removed.');
 }
 
