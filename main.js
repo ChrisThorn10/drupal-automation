@@ -5,6 +5,7 @@
 var fs = require('fs');                 //allows operations on files (file stream)
 var xml2js = require('xml2js');         //xml parsing used to convert xml to JSON
 var convert = require('xml-js');        //parsing used to convert JSON back to xml
+var cheerio = require('cheerio');
 const shell = require('electron').shell;
 const path = require('path');
 
@@ -69,6 +70,7 @@ fs.readFile(fileNameLoc, (err, data) => {
     setCorrectTargetAtt();
     removeSpans();
     removeStrongsFromHeaderTags();
+    formatTableTags();
 
     
     
@@ -187,14 +189,24 @@ function removeSpans() {
 
 function removeStrongsFromHeaderTags() {
     var findStrongTagsinHeaderTagsRegex = /(<\s*h[1-6]\s*>)([^<]*?)(<strong>)+(.*?)(<\/strong>)+(.*?)(<\/\s*h[1-6]\s*>)/g;
-    console.log(findStrongTagsinHeaderTagsRegex);
-    var matches = bodyHtmlString.match(findStrongTagsinHeaderTagsRegex);
-    console.log(matches);
+    //console.log(findStrongTagsinHeaderTagsRegex);
+    //var matches = bodyHtmlString.match(findStrongTagsinHeaderTagsRegex);
+    //console.log(matches);
     
     bodyHtmlString = bodyHtmlString.replace(findStrongTagsinHeaderTagsRegex, '$1$2$4$6$7');
    
     
     console.log('Strong tags within header tags have been removed.');
     
+}
+
+
+function formatTableTags() {  
+    var findTableTagRegEx = /<table\s.*?>/g;
+    //var matches = bodyHtmlString.match(findTableTagRegEx);
+    //console.log(matches);
+    bodyHtmlString = bodyHtmlString.replace(findTableTagRegEx, '<table border=\\"0\\" class=\\"table table-bordered table-responsive table-striped\\" style=\\"width:100%\\">');
+    
+    console.log('Tables are responsive and have additional boostrap styles');
 }
 
