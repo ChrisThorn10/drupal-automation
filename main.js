@@ -16,14 +16,13 @@ const path = require('path');
 // xml file should be named '[sitename]-basic-page.xml'
 // file should be saved to the 'xml-import' folder.
 // change the website variable to [sitename]
+// right now this file only works if the prod and stage site share the same name
 /*---------------------------------------------------------------------------*/
 
 /*EDIT THIS */  var website = 'education';
-/*EDIT THIS */  var websiteTitle = 'The Cato College of Education';
-///*EDIT THIS */  var stageProdSame = true;
+
 
 var stageSiteUrl = website + '.d07-stage.uncc.edu';
-
 var fileNameLoc = 'xml-import/' + website + '-basic-page.xml';
 var modFileNameLoc = 'xml-import/' + website + '-basic-page-modified.xml';
 
@@ -72,6 +71,7 @@ fs.readFile(fileNameLoc, (err, data) => {
     removeStrongsFromHeaderTags();
     formatTableTags();
     removeDivs();
+    makeAltTagsEmpty();
 
     
     
@@ -215,11 +215,28 @@ function formatTableTags() {
 function removeDivs() {
     
     //regex for span opening and closing tag
-    var divTagRegex = /<\/?div(.*)?>/g;
+    var divTagRegex = /<\/?div.*?>/g;
+    //var matches = bodyHtmlString.match(divTagRegex);
+    //console.log(matches);
     
     //replace span tags with nothing -- essentially deletes them
     bodyHtmlString = bodyHtmlString.replace(divTagRegex , '');
    
     console.log('All div tags have been removed.');
+}
+
+
+function makeAltTagsEmpty() {
+    
+    //regex for span opening and closing tag
+    var altTagRegex = /alt=\\".*?\\"/g;
+    //var matches = bodyHtmlString.match(altTagRegex);
+    //console.log(matches);
+    
+    //replace span tags alt=" " 
+    bodyHtmlString = bodyHtmlString.replace(altTagRegex , 'alt=\\" \\"');
+   
+    console.log('Existing alt tags are now empty.');
+    
 }
 
